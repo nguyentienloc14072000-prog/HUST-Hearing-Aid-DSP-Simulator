@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô Phỏng DSP Máy Trợ Thính 6 Bước - HUST BTL</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: rgba(17, 24, 39, 0.7);
+            --card-bg: rgba(31, 41, 55, 0.4);
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --hust-red: #B31F24;
+            --cyan: #00d2ff;
+            --red: #ff6b6b;
+            --orange: #ffa502;
+            --purple: #9b5de5;
+            --mint: #00f5d4;
+            --green: #2ecc71;
+            --border-radius: 12px;
+            --border-glow: rgba(179, 31, 36, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Times New Roman', 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(179, 31, 36, 0.1) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(0, 210, 255, 0.08) 0%, transparent 40%);
+        }
+
+        header {
+            background-color: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid var(--hust-red);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hust-badge {
+            background-color: var(--hust-red);
+            color: white;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+            height: calc(100vh - 80px);
+            min-height: 550px;
+        }
+
+        /* Control Panel Sidebar */
+        .controls-panel {
+            width: 320px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            border-left: 4px solid var(--hust-red);
+            padding-left: 10px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .control-label span.value {
+            color: var(--cyan);
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--hust-red);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--hust-red);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .audio-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-noisy {
+            background-color: var(--red);
+            color: #0b0f19;
+            box-shadow: 0 4px 14px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-noisy:hover {
+            background-color: #ff5252;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-clean {
+            background-color: var(--green);
+            color: #0b0f19;
+            box-shadow: 0 4px 14px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-clean:hover {
+            background-color: #27ae60;
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-stop {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-stop:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Right Content Area */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        /* Flow Pipeline Visualization */
+        .pipeline-container {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            gap: 10px;
+        }
+
+        .flow-step {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .flow-step:hover, .flow-step.active {
+            border-color: var(--step-color, var(--cyan));
+            box-shadow: 0 0 12px var(--step-color, var(--cyan));
+            background: rgba(31, 41, 55, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .step-num {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .flow-step.active .step-num {
+            background: var(--step-color, var(--cyan));
+            color: #000;
+        }
+
+        .step-icon {
+            font-size: 20px;
+            margin-top: 4px;
+        }
+
+        .step-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .step-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+
+        .flow-arrow {
+            font-size: 18px;
+            color: var(--text-muted);
+            font-weight: bold;
+            user-select: none;
+        }
+
+        /* 6-Plot Grid Layout */
+        .plots-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+            min-height: 480px;
+        }
+
+        .plot-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: border-color 0.3s;
+            position: relative;
+        }
+
+        .plot-card.highlight {
+            border-color: var(--theme-color);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+        }
+
+        .plot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 4px;
+        }
+
+        .plot-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--theme-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .plot-badge {
+            font-size: 9px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: rgba(10, 10, 10, 0.4);
+            border-radius: 6px;
+            overflow: hidden;
+            min-height: 100px;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Toast Indicator */
+        .status-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--hust-red);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .status-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-logo">
+            <span class="hust-badge">HUST</span>
+            <div class="header-title">
+                <h1>HỆ THỐNG MÔ PHỎNG LUỒNG BIẾN ĐỔI TÍN HIỆU 6 BƯỚC</h1>
+                <p>Bài tập lớn môn Tín hiệu và Hệ thống - Cấu trúc MSDAP & Thuật toán POT dịch bit</p>
+            </div>
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted);">
+            Trường Điện - Điện tử | <strong>ĐHBK Hà Nội</strong>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar Controls -->
+        <div class="controls-panel">
+            <div>
+                <div class="panel-title">Tín hiệu giọng nói gốc</div>
+                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Tần số giọng nói (Speech Freq)</span>
+                            <span class="value" id="speech-freq-val">500 Hz</span>
+                        </div>
+                        <input type="range" id="speech-freq" min="200" max="1500" step="50" value="500">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Âm lượng giọng nói (Volume)</span>
+                            <span class="value" id="speech-amp-val">80%</span>
+                        </div>
+                        <input type="range" id="speech-amp" min="10" max="100" step="5" value="80">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel-title">Nhiễu cao tần môi trường</div>
+                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Tần số nhiễu (Noise Freq)</span>
+                            <span class="value" id="noise-freq-val">12.0 kHz</span>
+                        </div>
+                        <input type="range" id="noise-freq" min="4000" max="15000" step="500" value="12000">
+                    </div>
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Cường độ nhiễu (Noise Amp)</span>
+                            <span class="value" id="noise-amp-val">40%</span>
+                        </div>
+                        <input type="range" id="noise-amp" min="0" max="100" step="5" value="40">
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+                <div class="panel-title">Trải nghiệm âm thanh DSP</div>
+                <div class="audio-buttons">
+                    <button class="btn btn-noisy" id="play-noisy">
+                        <span class="step-icon">🔊</span> Nghe Âm Thô (Lẫn Nhiễu)
+                    </button>
+                    <button class="btn btn-clean" id="play-clean">
+                        <span class="step-icon">🛡️</span> Nghe Qua Máy Trợ Thính
+                    </button>
+                    <button class="btn btn-stop" id="stop-audio">
+                        ⏹️ Tắt Âm Thanh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Workspace -->
+        <div class="workspace">
+            <!-- 6 step interactive pipeline map -->
+            <div class="pipeline-container">
+                <div class="flow-step active" id="step-btn-1" style="--step-color: var(--cyan)">
+                    <span class="step-num">1</span>
+                    <span class="step-icon">🗣️</span>
+                    <span class="step-title">Sóng âm vào</span>
+                    <span class="step-desc">Analog x(t) 500Hz</span>
+                </div>
+                <span class="flow-arrow">➔</span>
+                <div class="flow-step" id="step-btn-2" style="--step-color: var(--red)">
+                    <span class="step-num">2</span>
+                    <span class="step-icon">🎙️</span>
+                    <span class="step-title">Microphone</span>
+                    <span class="step-desc">Điện áp + Nhiễu 12kHz</span>
+                </div>
+                <span class="flow-arrow">➔</span>
+                <div class="flow-step" id="step-btn-3" style="--step-color: var(--orange)">
+                    <span class="step-num">3</span>
+                    <span class="step-icon">🔢</span>
+                    <span class="step-title">Bộ ADC</span>
+                    <span class="step-desc">Số hóa x(n) 16-bit</span>
+                </div>
+                <span class="flow-arrow">➔</span>
+                <div class="flow-step" id="step-btn-4" style="--step-color: var(--purple)">
+                    <span class="step-num">4</span>
+                    <span class="step-icon">⚙️</span>
+                    <span class="step-title">Bộ MSDAP (POT)</span>
+                    <span class="step-desc">Lọc dịch bit y(n)</span>
+                </div>
+                <span class="flow-arrow">➔</span>
+                <div class="flow-step" id="step-btn-5" style="--step-color: var(--mint)">
+                    <span class="step-num">5</span>
+                    <span class="step-icon">📉</span>
+                    <span class="step-title">Bộ DAC</span>
+                    <span class="step-desc">Khôi phục tương tự</span>
+                </div>
+                <span class="flow-arrow">➔</span>
+                <div class="flow-step" id="step-btn-6" style="--step-color: var(--green)">
+                    <span class="step-num">6</span>
+                    <span class="step-icon">🦻</span>
+                    <span class="step-title">Loa / Receiver</span>
+                    <span class="step-desc">Âm thanh sạch ra tai</span>
+                </div>
+            </div>
+
+            <!-- 6 waveform plots -->
+            <div class="plots-grid">
+                <!-- Plot 1: Sound wave in -->
+                <div class="plot-card highlight" id="plot-card-1" style="--theme-color: var(--cyan);">
+                    <div class="plot-header">
+                        <span class="plot-title">🗣️ Bước 1: Sóng âm vào (Analog x(t))</span>
+                        <span class="plot-badge">Dải thông 500 Hz</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-1"></canvas>
+                    </div>
+                </div>
+
+                <!-- Plot 2: Microphone -->
+                <div class="plot-card" id="plot-card-2" style="--theme-color: var(--red);">
+                    <div class="plot-header">
+                        <span class="plot-title">🎙️ Bước 2: Sau Microphone (Lẫn nhiễu)</span>
+                        <span class="plot-badge">500 Hz + Nhiễu 12 kHz</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-2"></canvas>
+                    </div>
+                </div>
+
+                <!-- Plot 3: ADC -->
+                <div class="plot-card" id="plot-card-3" style="--theme-color: var(--orange);">
+                    <div class="plot-header">
+                        <span class="plot-title">🔢 Bước 3: Sau bộ ADC (Số hóa x(n))</span>
+                        <span class="plot-badge">Lấy mẫu & Lượng tử 16-bit</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-3"></canvas>
+                    </div>
+                </div>
+
+                <!-- Plot 4: MSDAP POT -->
+                <div class="plot-card" id="plot-card-4" style="--theme-color: var(--purple);">
+                    <div class="plot-header">
+                        <span class="plot-title">⚙️ Bước 4: Bộ xử lý MSDAP (Thuật toán POT)</span>
+                        <span class="plot-badge">Lọc sạch nhiễu dịch bit</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-4"></canvas>
+                    </div>
+                </div>
+
+                <!-- Plot 5: DAC -->
+                <div class="plot-card" id="plot-card-5" style="--theme-color: var(--mint);">
+                    <div class="plot-header">
+                        <span class="plot-title">📉 Bước 5: Sau bộ DAC (Khôi phục)</span>
+                        <span class="plot-badge">Tái tạo điện áp liên tục</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-5"></canvas>
+                    </div>
+                </div>
+
+                <!-- Plot 6: Receiver -->
+                <div class="plot-card" id="plot-card-6" style="--theme-color: var(--green);">
+                    <div class="plot-header">
+                        <span class="plot-title">🦻 Bước 6: Ngõ ra Loa (Khuếch đại)</span>
+                        <span class="plot-badge">Âm thanh sạch truyền vào tai</span>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="canvas-6"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-toast" id="toast">Thông báo</div>
+
+    <script>
+        // State variables
+        let speechFreq = 500;
+        let speechAmp = 0.8;
+        let noiseFreq = 12000;
+        let noiseAmp = 0.4;
+        let activeStep = 1;
+
+        // Audio Context nodes
+        let audioCtx = null;
+        let speechOsc = null;
+        let noiseOsc = null;
+        let lowpassFilter = null;
+        let masterGain = null;
+        let isPlaying = false;
+
+        // DOM elements
+        const sliders = {
+            speechFreq: document.getElementById('speech-freq'),
+            speechAmp: document.getElementById('speech-amp'),
+            noiseFreq: document.getElementById('noise-freq'),
+            noiseAmp: document.getElementById('noise-amp')
+        };
+
+        const valDisplays = {
+            speechFreq: document.getElementById('speech-freq-val'),
+            speechAmp: document.getElementById('speech-amp-val'),
+            noiseFreq: document.getElementById('noise-freq-val'),
+            noiseAmp: document.getElementById('noise-amp-val')
+        };
+
+        // Canvas elements and context arrays
+        const canvases = [];
+        const ctxs = [];
+        for (let i = 1; i <= 6; i++) {
+            const canv = document.getElementById(`canvas-${i}`);
+            canvases.push(canv);
+            ctxs.push(canv.getContext('2d'));
+        }
+
+        // Initialize Slider Listeners
+        sliders.speechFreq.addEventListener('input', (e) => {
+            speechFreq = parseInt(e.target.value);
+            valDisplays.speechFreq.innerText = `${speechFreq} Hz`;
+            if (isPlaying && speechOsc) {
+                speechOsc.frequency.setValueAtTime(speechFreq, audioCtx.currentTime);
+            }
+            updatePlots();
+        });
+
+        sliders.speechAmp.addEventListener('input', (e) => {
+            speechAmp = parseInt(e.target.value) / 100;
+            valDisplays.speechAmp.innerText = `${Math.round(speechAmp*100)}%`;
+            updatePlots();
+        });
+
+        sliders.noiseFreq.addEventListener('input', (e) => {
+            noiseFreq = parseInt(e.target.value);
+            valDisplays.noiseFreq.innerText = `${(noiseFreq/1000).toFixed(1)} kHz`;
+            if (isPlaying && noiseOsc) {
+                noiseOsc.frequency.setValueAtTime(noiseFreq, audioCtx.currentTime);
+            }
+            updatePlots();
+        });
+
+        sliders.noiseAmp.addEventListener('input', (e) => {
+            noiseAmp = parseInt(e.target.value) / 100;
+            valDisplays.noiseAmp.innerText = `${Math.round(noiseAmp*100)}%`;
+            updatePlots();
+        });
+
+        // Initialize Step Interactive Listeners
+        for (let i = 1; i <= 6; i++) {
+            document.getElementById(`step-btn-${i}`).addEventListener('click', () => {
+                setActiveStep(i);
+            });
+        }
+
+        function setActiveStep(stepIndex) {
+            activeStep = stepIndex;
+            for (let i = 1; i <= 6; i++) {
+                const btn = document.getElementById(`step-btn-${i}`);
+                const card = document.getElementById(`plot-card-${i}`);
+                if (i === stepIndex) {
+                    btn.classList.add('active');
+                    card.classList.add('highlight');
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                    card.classList.remove('highlight');
+                }
+            }
+            showToast(`Đang tập trung khảo sát Bước ${stepIndex}`);
+        }
+
+        // Show toast feedback
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Window resize handler for high DPI canvases
+        function resizeCanvases() {
+            canvases.forEach((canvas) => {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width * window.devicePixelRatio;
+                canvas.height = rect.height * window.devicePixelRatio;
+            });
+            updatePlots();
+        }
+        window.addEventListener('resize', resizeCanvases);
+
+        // Core Signal Drawing Math
+        function updatePlots() {
+            ctxs.forEach((ctx, idx) => {
+                const step = idx + 1;
+                const canvas = canvases[idx];
+                const w = canvas.width;
+                const h = canvas.height;
+
+                // Clear canvas
+                ctx.clearRect(0, 0, w, h);
+
+                // Draw background grids
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                const numGridX = 10;
+                const numGridY = 6;
+                for (let i = 1; i < numGridX; i++) {
+                    const x = (w / numGridX) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, h);
+                    ctx.stroke();
+                }
+                for (let i = 1; i < numGridY; i++) {
+                    const y = (h / numGridY) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(w, y);
+                    ctx.stroke();
+                }
+
+                // Draw central axis
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.beginPath();
+                ctx.moveTo(0, h/2);
+                ctx.lineTo(w, h/2);
+                ctx.stroke();
+
+                // Plotting line settings
+                ctx.lineWidth = 2 * window.devicePixelRatio;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+
+                const pad = 15 * window.devicePixelRatio;
+                const plotWidth = w - 2 * pad;
+                const plotHeight = h - 2 * pad;
+                const midY = h / 2;
+
+                ctx.beginPath();
+
+                // Time window to plot (6 milliseconds total window)
+                const totalTime = 0.005; 
+
+                if (step === 1) {
+                    // Continuous Acoustic Sound Wave (Cyan)
+                    ctx.strokeStyle = '#00d2ff';
+                    for (let x = 0; x <= plotWidth; x++) {
+                        const t = (x / plotWidth) * totalTime;
+                        const val = speechAmp * Math.sin(2 * Math.PI * speechFreq * t);
+                        const canvasY = midY - val * (plotHeight / 2);
+                        if (x === 0) ctx.moveTo(pad, canvasY);
+                        else ctx.lineTo(pad + x, canvasY);
+                    }
+                    ctx.stroke();
+                } 
+                else if (step === 2) {
+                    // Microphone Output (Continuous with Noise - Red)
+                    ctx.strokeStyle = '#ff6b6b';
+                    for (let x = 0; x <= plotWidth; x++) {
+                        const t = (x / plotWidth) * totalTime;
+                        const val = speechAmp * Math.sin(2 * Math.PI * speechFreq * t) + 
+                                    noiseAmp * Math.sin(2 * Math.PI * noiseFreq * t);
+                        const canvasY = midY - (val / 1.4) * (plotHeight / 2); // normalised scale
+                        if (x === 0) ctx.moveTo(pad, canvasY);
+                        else ctx.lineTo(pad + x, canvasY);
+                    }
+                    ctx.stroke();
+                }
+                else if (step === 3) {
+                    // ADC Output (Sampled & Quantized Noisy - Orange)
+                    ctx.strokeStyle = '#ffa502';
+                    const sampleRate = 8000; // visual sample rate
+                    const Ts = 1 / sampleRate;
+                    const quantLevels = 8;
+
+                    let lastY = midY;
+                    for (let x = 0; x <= plotWidth; x++) {
+                        const t = (x / plotWidth) * totalTime;
+                        // Find last sample time
+                        const sampleIdx = Math.floor(t / Ts);
+                        const tSample = sampleIdx * Ts;
+                        
+                        // Sample value
+                        const rawVal = speechAmp * Math.sin(2 * Math.PI * speechFreq * tSample) + 
+                                       noiseAmp * Math.sin(2 * Math.PI * noiseFreq * tSample);
+                        const normalizedVal = (rawVal / 1.4 + 1.2) / 2.4; // normalise to [0,1]
+                        
+                        // Quantized step mapping
+                        const quantVal = Math.round(normalizedVal * (quantLevels - 1)) / (quantLevels - 1);
+                        const actualVal = (quantVal * 2.4 - 1.2) * 1.2;
+
+                        const canvasY = midY - actualVal * (plotHeight / 2);
+                        if (x === 0) ctx.moveTo(pad, canvasY);
+                        else ctx.lineTo(pad + x, canvasY);
+                    }
+                    ctx.stroke();
+
+                    // Draw red dots at sample instants
+                    ctx.fillStyle = '#ff4757';
+                    const maxSamples = Math.floor(totalTime * sampleRate);
+                    for (let n = 0; n <= maxSamples; n++) {
+                        const tSample = n * Ts;
+                        const xPos = pad + (tSample / totalTime) * plotWidth;
+                        const rawVal = speechAmp * Math.sin(2 * Math.PI * speechFreq * tSample) + 
+                                       noiseAmp * Math.sin(2 * Math.PI * noiseFreq * tSample);
+                        const canvasY = midY - (rawVal / 1.4) * (plotHeight / 2);
+                        ctx.beginPath();
+                        ctx.arc(xPos, canvasY, 3.5 * window.devicePixelRatio, 0, 2*Math.PI);
+                        ctx.fill();
+                    }
+                }
+                else if (step === 4) {
+                    // MSDAP POT Filter Output (Sampled & Quantized Clean - Purple)
+                    ctx.strokeStyle = '#9b5de5';
+                    const sampleRate = 8000;
+                    const Ts = 1 / sampleRate;
+                    const quantLevels = 8;
+
+                    for (let x = 0; x <= plotWidth; x++) {
+                        const t = (x / plotWidth) * totalTime;
+                        const sampleIdx = Math.floor(t / Ts);
+                        const tSample = sampleIdx * Ts;
+                        
+                        // Sample value of clean speech only
+                        const rawVal = speechAmp * Math.sin(2 * Math.PI * speechFreq * tSample);
+                        const normalizedVal = (rawVal + 1) / 2;
+                        
+                        const quantVal = Math.round(normalizedVal * (quantLevels - 1)) / (quantLevels - 1);
+                        const actualVal = quantVal * 2 - 1;
+
+                        const canvasY = midY - actualVal * (plotHeight / 2);
+                        if (x === 0) ctx.moveTo(pad, canvasY);
+                        else ctx.lineTo(pad + x, canvasY);
+                    }
+                    ctx.stroke();
+                }
+                else if (step === 5) {
+                    // DAC Output (Smooth Reconstructed Analog Voltage - Mint)
+                    ctx.strokeStyle = '#00f5d4';
+                    for (let x = 0; x <= plotWidth; x++) {
+                        const t = (x / plotWidth) * totalTime;
+                        const val = speechAmp * Math.sin(2 * Math.PI * speechFreq * t);
+                        const canvasY = midY - val * (plotHeight / 2);
+                        if (x === 0) ctx.moveTo(pad, canvasY);
+                        else ctx.lineTo(pad + x, canvasY);
+                    }
+                    ctx.stroke();
+                }
+                else if (step === 6) {
+                    // Speaker / Receiver Output (Amplified Sound - Green)
+                    ctx.strokeStyle = '#2ecc71';
+                    const gain = 1.35; // Amplification
+                    for (let x = 0; x <= plotWidth; x++) {
+                        const t = (x / plotWidth) * totalTime;
+                        const val = gain * speechAmp * Math.sin(2 * Math.PI * speechFreq * t);
+                        const canvasY = midY - (val / 1.4) * (plotHeight / 2); // scaled
+                        if (x === 0) ctx.moveTo(pad, canvasY);
+                        else ctx.lineTo(pad + x, canvasY);
+                    }
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Real-Time Audio Synthesizer (Web Audio API)
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function stopAudio() {
+            if (!isPlaying) return;
+            
+            if (speechOsc) {
+                speechOsc.stop();
+                speechOsc.disconnect();
+            }
+            if (noiseOsc) {
+                noiseOsc.stop();
+                noiseOsc.disconnect();
+            }
+            if (masterGain) {
+                masterGain.disconnect();
+            }
+            
+            speechOsc = null;
+            noiseOsc = null;
+            lowpassFilter = null;
+            masterGain = null;
+            isPlaying = false;
+            showToast("Đã tắt âm thanh");
+        }
+
+        document.getElementById('stop-audio').addEventListener('click', stopAudio);
+
+        // Play Noisy Signal (Step 2 - Raw Sound)
+        document.getElementById('play-noisy').addEventListener('click', () => {
+            stopAudio();
+            initAudio();
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            speechOsc = audioCtx.createOscillator();
+            speechOsc.type = 'sine';
+            speechOsc.frequency.setValueAtTime(speechFreq, audioCtx.currentTime);
+
+            noiseOsc = audioCtx.createOscillator();
+            noiseOsc.type = 'sine';
+            noiseOsc.frequency.setValueAtTime(noiseFreq, audioCtx.currentTime);
+
+            const speechGain = audioCtx.createGain();
+            speechGain.gain.setValueAtTime(speechAmp * 0.15, audioCtx.currentTime);
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(noiseAmp * 0.15, audioCtx.currentTime);
+
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(1.0, audioCtx.currentTime);
+
+            speechOsc.connect(speechGain);
+            noiseOsc.connect(noiseGain);
+            speechGain.connect(masterGain);
+            noiseGain.connect(masterGain);
+            masterGain.connect(audioCtx.destination);
+
+            speechOsc.start();
+            noiseOsc.start();
+            isPlaying = true;
+            setActiveStep(2);
+            showToast("Đang phát Âm thô (Có cọc rít nhiễu dải cao)");
+        });
+
+        // Play Clean Signal (Step 6 - Filtered Sound through MSDAP + POT)
+        document.getElementById('play-clean').addEventListener('click', () => {
+            stopAudio();
+            initAudio();
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            speechOsc = audioCtx.createOscillator();
+            speechOsc.type = 'sine';
+            speechOsc.frequency.setValueAtTime(speechFreq, audioCtx.currentTime);
+
+            noiseOsc = audioCtx.createOscillator();
+            noiseOsc.type = 'sine';
+            noiseOsc.frequency.setValueAtTime(noiseFreq, audioCtx.currentTime);
+
+            lowpassFilter = audioCtx.createBiquadFilter();
+            lowpassFilter.type = 'lowpass';
+            lowpassFilter.frequency.setValueAtTime(3000, audioCtx.currentTime); 
+            lowpassFilter.Q.setValueAtTime(1.0, audioCtx.currentTime);
+
+            const speechGain = audioCtx.createGain();
+            speechGain.gain.setValueAtTime(speechAmp * 0.15, audioCtx.currentTime);
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(noiseAmp * 0.15, audioCtx.currentTime);
+
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(1.35, audioCtx.currentTime);
+
+            speechOsc.connect(lowpassFilter);
+            noiseOsc.connect(lowpassFilter);
+            lowpassFilter.connect(speechGain);
+            speechGain.connect(masterGain);
+            masterGain.connect(audioCtx.destination);
+
+            speechOsc.start();
+            noiseOsc.start();
+            isPlaying = true;
+            setActiveStep(6);
+            showToast("Máy trợ thính đang phát (MSDAP đã cắt rít nhiễu)");
+        });
+
+        setTimeout(() => {
+            resizeCanvases();
+        }, 100);
+    </script>
+</body>
+</html>
