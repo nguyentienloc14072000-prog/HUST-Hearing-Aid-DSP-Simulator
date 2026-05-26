@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mô Phỏng DSP Máy Trợ Thính 6 Bước - HUST BTL</title>
+    <title>Mô Phỏng DSP Máy Trợ Thính - HUST BTL</title>
     <style>
         :root {
             --bg-color: #0b0f19;
-            --panel-bg: rgba(17, 24, 39, 0.7);
-            --card-bg: rgba(31, 41, 55, 0.4);
+            --panel-bg: rgba(17, 24, 39, 0.75);
+            --card-bg: rgba(31, 41, 55, 0.45);
             --text-color: #f3f4f6;
             --text-muted: #9ca3af;
             --hust-red: #B31F24;
@@ -19,7 +19,6 @@
             --mint: #00f5d4;
             --green: #2ecc71;
             --border-radius: 12px;
-            --border-glow: rgba(179, 31, 36, 0.2);
         }
 
         * {
@@ -41,7 +40,7 @@
         }
 
         header {
-            background-color: rgba(11, 15, 25, 0.85);
+            background-color: rgba(11, 15, 25, 0.9);
             backdrop-filter: blur(8px);
             border-bottom: 2px solid var(--hust-red);
             padding: 15px 30px;
@@ -80,16 +79,61 @@
             margin-top: 2px;
         }
 
-        .main-container {
+        /* Tabs Navigation */
+        .app-tabs {
+            background: rgba(11, 15, 25, 0.95);
             display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0 30px;
+            gap: 15px;
+            z-index: 99;
+        }
+
+        .tab-link {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 15px 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-link:hover {
+            color: white;
+        }
+
+        .tab-link.active {
+            color: var(--cyan);
+            border-bottom-color: var(--hust-red);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* ------------------ SIMULATOR TAB ------------------ */
+        .main-container {
             flex: 1;
             padding: 20px;
             gap: 20px;
-            height: calc(100vh - 80px);
-            min-height: 550px;
+            height: calc(100vh - 130px);
+            min-height: 520px;
         }
 
-        /* Control Panel Sidebar */
         .controls-panel {
             width: 320px;
             background: var(--panel-bg);
@@ -105,7 +149,7 @@
         }
 
         .panel-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             color: white;
             border-left: 4px solid var(--hust-red);
@@ -171,7 +215,7 @@
             border: none;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -206,20 +250,19 @@
         }
 
         .btn-stop {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.08);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .btn-stop:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.18);
         }
 
         .btn:active {
             transform: translateY(1px);
         }
 
-        /* Right Content Area */
         .workspace {
             flex: 1;
             display: flex;
@@ -228,7 +271,6 @@
             overflow-y: auto;
         }
 
-        /* Flow Pipeline Visualization */
         .pipeline-container {
             background: var(--panel-bg);
             backdrop-filter: blur(12px);
@@ -239,7 +281,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            gap: 10px;
+            gap: 8px;
         }
 
         .flow-step {
@@ -247,7 +289,7 @@
             background: var(--card-bg);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -260,7 +302,7 @@
 
         .flow-step:hover, .flow-step.active {
             border-color: var(--step-color, var(--cyan));
-            box-shadow: 0 0 12px var(--step-color, var(--cyan));
+            box-shadow: 0 0 10px var(--step-color, var(--cyan));
             background: rgba(31, 41, 55, 0.7);
             transform: translateY(-2px);
         }
@@ -269,11 +311,11 @@
             position: absolute;
             top: 5px;
             left: 5px;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.15);
-            font-size: 10px;
+            font-size: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -287,30 +329,28 @@
         }
 
         .step-icon {
-            font-size: 20px;
-            margin-top: 4px;
+            font-size: 18px;
+            margin-top: 2px;
         }
 
         .step-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             color: white;
         }
 
         .step-desc {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-muted);
             line-height: 1.2;
         }
 
         .flow-arrow {
-            font-size: 18px;
+            font-size: 16px;
             color: var(--text-muted);
-            font-weight: bold;
             user-select: none;
         }
 
-        /* 6-Plot Grid Layout */
         .plots-grid {
             flex: 1;
             display: grid;
@@ -330,12 +370,11 @@
             flex-direction: column;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: border-color 0.3s;
-            position: relative;
         }
 
         .plot-card.highlight {
             border-color: var(--theme-color);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.03);
         }
 
         .plot-header {
@@ -367,7 +406,7 @@
         .canvas-container {
             flex: 1;
             position: relative;
-            background: rgba(10, 10, 10, 0.4);
+            background: rgba(10, 10, 10, 0.45);
             border-radius: 6px;
             overflow: hidden;
             min-height: 100px;
@@ -379,6 +418,118 @@
             left: 0;
             width: 100%;
             height: 100%;
+        }
+
+        /* ------------------ FILE DSP TAB ------------------ */
+        .file-container {
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+            height: calc(100vh - 130px);
+            min-height: 520px;
+        }
+
+        .file-sidebar {
+            width: 320px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .file-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(0, 210, 255, 0.25);
+            background: rgba(31, 41, 55, 0.2);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--cyan);
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 38px;
+        }
+
+        .upload-text h3 {
+            font-size: 15px;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .upload-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .file-info-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .file-info-card h4 {
+            color: white;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 4px;
+        }
+
+        .large-plots-grid {
+            flex: 1;
+            display: grid;
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .large-plot-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .large-canvas-container {
+            flex: 1;
+            position: relative;
+            background: rgba(10, 10, 10, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            min-height: 120px;
         }
 
         /* Toast Indicator */
@@ -412,7 +563,7 @@
         <div class="header-logo">
             <span class="hust-badge">HUST</span>
             <div class="header-title">
-                <h1>HỆ THỐNG MÔ PHỎNG LUỒNG BIẾN ĐỔI TÍN HIỆU 6 BƯỚC</h1>
+                <h1>HỆ THỐNG MÔ PHỎNG VÀ XỬ LÝ ÂM THANH MÁY TRỢ THÍNH</h1>
                 <p>Bài tập lớn môn Tín hiệu và Hệ thống - Cấu trúc MSDAP & Thuật toán POT dịch bit</p>
             </div>
         </div>
@@ -421,177 +572,272 @@
         </div>
     </header>
 
-    <div class="main-container">
-        <!-- Sidebar Controls -->
-        <div class="controls-panel">
-            <div>
-                <div class="panel-title">Tín hiệu giọng nói gốc</div>
-                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>Tần số giọng nói (Speech Freq)</span>
-                            <span class="value" id="speech-freq-val">500 Hz</span>
+    <div class="app-tabs">
+        <button class="tab-link active" onclick="switchTab('sim-tab')">📡 Mô phỏng luồng tín hiệu (Simulator)</button>
+        <button class="tab-link" onclick="switchTab('file-tab')">🎵 Xử lý file ghi âm thực tế (Audio DSP)</button>
+    </div>
+
+    <!-- ------------------ TAB 1: SIMULATOR ------------------ -->
+    <div class="tab-content active" id="sim-tab">
+        <div class="main-container" style="display: flex; width: 100%;">
+            <!-- Sidebar Controls -->
+            <div class="controls-panel">
+                <div>
+                    <div class="panel-title">Tín hiệu giọng nói gốc</div>
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Tần số giọng nói (Speech Freq)</span>
+                                <span class="value" id="speech-freq-val">500 Hz</span>
+                            </div>
+                            <input type="range" id="speech-freq" min="200" max="1500" step="50" value="500">
                         </div>
-                        <input type="range" id="speech-freq" min="200" max="1500" step="50" value="500">
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Âm lượng giọng nói (Volume)</span>
+                                <span class="value" id="speech-amp-val">80%</span>
+                            </div>
+                            <input type="range" id="speech-amp" min="10" max="100" step="5" value="80">
+                        </div>
                     </div>
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>Âm lượng giọng nói (Volume)</span>
-                            <span class="value" id="speech-amp-val">80%</span>
+                </div>
+
+                <div>
+                    <div class="panel-title">Nhiễu cao tần môi trường</div>
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Tần số nhiễu (Noise Freq)</span>
+                                <span class="value" id="noise-freq-val">12.0 kHz</span>
+                            </div>
+                            <input type="range" id="noise-freq" min="4000" max="15000" step="500" value="12000">
                         </div>
-                        <input type="range" id="speech-amp" min="10" max="100" step="5" value="80">
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Cường độ nhiễu (Noise Amp)</span>
+                                <span class="value" id="noise-amp-val">40%</span>
+                            </div>
+                            <input type="range" id="noise-amp" min="0" max="100" step="5" value="40">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="panel-title">Trải nghiệm âm thanh DSP</div>
+                    <div class="audio-buttons">
+                        <button class="btn btn-noisy" id="play-noisy">
+                            <span class="step-icon">🔊</span> Nghe Âm Thô (Lẫn Nhiễu)
+                        </button>
+                        <button class="btn btn-clean" id="play-clean">
+                            <span class="step-icon">🛡️</span> Nghe Qua Máy Trợ Thính
+                        </button>
+                        <button class="btn btn-stop" id="stop-audio">
+                            ⏹️ Tắt Âm Thanh
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div>
-                <div class="panel-title">Nhiễu cao tần môi trường</div>
-                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>Tần số nhiễu (Noise Freq)</span>
-                            <span class="value" id="noise-freq-val">12.0 kHz</span>
-                        </div>
-                        <input type="range" id="noise-freq" min="4000" max="15000" step="500" value="12000">
+            <!-- Right Workspace -->
+            <div class="workspace">
+                <div class="pipeline-container">
+                    <div class="flow-step active" id="step-btn-1" style="--step-color: var(--cyan)">
+                        <span class="step-num">1</span>
+                        <span class="step-icon">🗣️</span>
+                        <span class="step-title">Sóng âm vào</span>
+                        <span class="step-desc">Analog x(t) 500Hz</span>
                     </div>
-                    <div class="control-group">
-                        <div class="control-label">
-                            <span>Cường độ nhiễu (Noise Amp)</span>
-                            <span class="value" id="noise-amp-val">40%</span>
-                        </div>
-                        <input type="range" id="noise-amp" min="0" max="100" step="5" value="40">
+                    <span class="flow-arrow">➔</span>
+                    <div class="flow-step" id="step-btn-2" style="--step-color: var(--red)">
+                        <span class="step-num">2</span>
+                        <span class="step-icon">🎙️</span>
+                        <span class="step-title">Microphone</span>
+                        <span class="step-desc">Điện áp + Nhiễu 12kHz</span>
+                    </div>
+                    <span class="flow-arrow">➔</span>
+                    <div class="flow-step" id="step-btn-3" style="--step-color: var(--orange)">
+                        <span class="step-num">3</span>
+                        <span class="step-icon">🔢</span>
+                        <span class="step-title">Bộ ADC</span>
+                        <span class="step-desc">Số hóa x(n) 16-bit</span>
+                    </div>
+                    <span class="flow-arrow">➔</span>
+                    <div class="flow-step" id="step-btn-4" style="--step-color: var(--purple)">
+                        <span class="step-num">4</span>
+                        <span class="step-icon">⚙️</span>
+                        <span class="step-title">Bộ MSDAP (POT)</span>
+                        <span class="step-desc">Lọc dịch bit y(n)</span>
+                    </div>
+                    <span class="flow-arrow">➔</span>
+                    <div class="flow-step" id="step-btn-5" style="--step-color: var(--mint)">
+                        <span class="step-num">5</span>
+                        <span class="step-icon">📉</span>
+                        <span class="step-title">Bộ DAC</span>
+                        <span class="step-desc">Khôi phục tương tự</span>
+                    </div>
+                    <span class="flow-arrow">➔</span>
+                    <div class="flow-step" id="step-btn-6" style="--step-color: var(--green)">
+                        <span class="step-num">6</span>
+                        <span class="step-icon">🦻</span>
+                        <span class="step-title">Loa / Receiver</span>
+                        <span class="step-desc">Âm thanh sạch ra tai</span>
                     </div>
                 </div>
-            </div>
 
-            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
-                <div class="panel-title">Trải nghiệm âm thanh DSP</div>
-                <div class="audio-buttons">
-                    <button class="btn btn-noisy" id="play-noisy">
-                        <span class="step-icon">🔊</span> Nghe Âm Thô (Lẫn Nhiễu)
-                    </button>
-                    <button class="btn btn-clean" id="play-clean">
-                        <span class="step-icon">🛡️</span> Nghe Qua Máy Trợ Thính
-                    </button>
-                    <button class="btn btn-stop" id="stop-audio">
-                        ⏹️ Tắt Âm Thanh
-                    </button>
+                <div class="plots-grid">
+                    <div class="plot-card highlight" id="plot-card-1" style="--theme-color: var(--cyan);">
+                        <div class="plot-header">
+                            <span class="plot-title">🗣️ Bước 1: Sóng âm vào (Analog x(t))</span>
+                            <span class="plot-badge">Dải thông 500 Hz</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-1"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="plot-card" id="plot-card-2" style="--theme-color: var(--red);">
+                        <div class="plot-header">
+                            <span class="plot-title">🎙️ Bước 2: Sau Microphone (Lẫn nhiễu)</span>
+                            <span class="plot-badge">500 Hz + Nhiễu 12 kHz</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-2"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="plot-card" id="plot-card-3" style="--theme-color: var(--orange);">
+                        <div class="plot-header">
+                            <span class="plot-title">🔢 Bước 3: Sau bộ ADC (Số hóa x(n))</span>
+                            <span class="plot-badge">Lấy mẫu & Lượng tử 16-bit</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-3"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="plot-card" id="plot-card-4" style="--theme-color: var(--purple);">
+                        <div class="plot-header">
+                            <span class="plot-title">⚙️ Bước 4: Bộ xử lý MSDAP (Thuật toán POT)</span>
+                            <span class="plot-badge">Lọc sạch nhiễu dịch bit</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-4"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="plot-card" id="plot-card-5" style="--theme-color: var(--mint);">
+                        <div class="plot-header">
+                            <span class="plot-title">📉 Bước 5: Sau bộ DAC (Khôi phục)</span>
+                            <span class="plot-badge">Tái tạo điện áp liên tục</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-5"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="plot-card" id="plot-card-6" style="--theme-color: var(--green);">
+                        <div class="plot-header">
+                            <span class="plot-title">🦻 Bước 6: Ngõ ra Loa (Khuếch đại)</span>
+                            <span class="plot-badge">Âm thanh sạch truyền vào tai</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-6"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Right Workspace -->
-        <div class="workspace">
-            <!-- 6 step interactive pipeline map -->
-            <div class="pipeline-container">
-                <div class="flow-step active" id="step-btn-1" style="--step-color: var(--cyan)">
-                    <span class="step-num">1</span>
-                    <span class="step-icon">🗣️</span>
-                    <span class="step-title">Sóng âm vào</span>
-                    <span class="step-desc">Analog x(t) 500Hz</span>
+    <!-- ------------------ TAB 2: AUDIO FILE DSP ------------------ -->
+    <div class="tab-content" id="file-tab">
+        <div class="file-container" style="display: flex; width: 100%;">
+            <!-- Sidebar Controls for File -->
+            <div class="file-sidebar">
+                <div class="panel-title">Tệp âm thanh ghi âm</div>
+                
+                <!-- File upload zone -->
+                <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                    <span class="upload-icon">📁</span>
+                    <div class="upload-text">
+                        <h3>Kéo & thả hoặc Chọn tệp</h3>
+                        <p>Hỗ trợ .m4a, .mp3, .wav, .ogg</p>
+                    </div>
+                    <input type="file" id="file-input" accept="audio/*" style="display: none;">
                 </div>
-                <span class="flow-arrow">➔</span>
-                <div class="flow-step" id="step-btn-2" style="--step-color: var(--red)">
-                    <span class="step-num">2</span>
-                    <span class="step-icon">🎙️</span>
-                    <span class="step-title">Microphone</span>
-                    <span class="step-desc">Điện áp + Nhiễu 12kHz</span>
+
+                <!-- Load Demo Button -->
+                <button class="btn btn-clean" id="load-demo-btn" style="background-color: var(--purple); color: white; box-shadow: 0 4px 14px rgba(155, 93, 229, 0.3); text-transform: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    ✨ Nạp Bản Ghi Mẫu "Bản ghi mới 6.m4a"
+                </button>
+
+                <!-- Info of loaded file -->
+                <div class="file-info-card" id="file-info">
+                    <h4>Thông tin tệp tin</h4>
+                    <span style="color: var(--text-muted); font-style: italic;">Chưa nạp tệp âm thanh nào. Hãy chọn tệp ghi âm để xử lý.</span>
                 </div>
-                <span class="flow-arrow">➔</span>
-                <div class="flow-step" id="step-btn-3" style="--step-color: var(--orange)">
-                    <span class="step-num">3</span>
-                    <span class="step-icon">🔢</span>
-                    <span class="step-title">Bộ ADC</span>
-                    <span class="step-desc">Số hóa x(n) 16-bit</span>
+
+                <!-- DSP Controls -->
+                <div>
+                    <div class="panel-title">Bộ lọc MSDAP & POT</div>
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Tần số cắt bộ lọc (Cutoff)</span>
+                                <span class="value" id="file-cutoff-val">2200 Hz</span>
+                            </div>
+                            <input type="range" id="file-cutoff" min="500" max="5000" step="100" value="2200">
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Âm lượng đầu ra</span>
+                                <span class="value" id="file-volume-val">100%</span>
+                            </div>
+                            <input type="range" id="file-volume" min="0" max="150" step="5" value="100">
+                        </div>
+                    </div>
                 </div>
-                <span class="flow-arrow">➔</span>
-                <div class="flow-step" id="step-btn-4" style="--step-color: var(--purple)">
-                    <span class="step-num">4</span>
-                    <span class="step-icon">⚙️</span>
-                    <span class="step-title">Bộ MSDAP (POT)</span>
-                    <span class="step-desc">Lọc dịch bit y(n)</span>
-                </div>
-                <span class="flow-arrow">➔</span>
-                <div class="flow-step" id="step-btn-5" style="--step-color: var(--mint)">
-                    <span class="step-num">5</span>
-                    <span class="step-icon">📉</span>
-                    <span class="step-title">Bộ DAC</span>
-                    <span class="step-desc">Khôi phục tương tự</span>
-                </div>
-                <span class="flow-arrow">➔</span>
-                <div class="flow-step" id="step-btn-6" style="--step-color: var(--green)">
-                    <span class="step-num">6</span>
-                    <span class="step-icon">🦻</span>
-                    <span class="step-title">Loa / Receiver</span>
-                    <span class="step-desc">Âm thanh sạch ra tai</span>
+
+                <!-- Control Buttons -->
+                <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="panel-title">Trình điều khiển</div>
+                    <div class="audio-buttons">
+                        <button class="btn btn-noisy" id="play-file-raw">
+                            <span class="step-icon">🔊</span> Phát Ghi Âm Gốc
+                        </button>
+                        <button class="btn btn-clean" id="play-file-filtered">
+                            <span class="step-icon">🛡️</span> Phát Qua Bộ Lọc Trợ Thính
+                        </button>
+                        <button class="btn btn-stop" id="stop-file-audio">
+                            ⏹️ Tắt Âm Thanh
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- 6 waveform plots -->
-            <div class="plots-grid">
-                <!-- Plot 1: Sound wave in -->
-                <div class="plot-card highlight" id="plot-card-1" style="--theme-color: var(--cyan);">
-                    <div class="plot-header">
-                        <span class="plot-title">🗣️ Bước 1: Sóng âm vào (Analog x(t))</span>
-                        <span class="plot-badge">Dải thông 500 Hz</span>
+            <!-- Visualizers -->
+            <div class="file-workspace">
+                <div class="large-plots-grid">
+                    <!-- Real-time Waveform Canvas -->
+                    <div class="large-plot-card" style="--theme-color: var(--cyan);">
+                        <div class="plot-header">
+                            <span class="plot-title">📊 Biểu đồ miền thời gian (Waveform) - Thời gian thực</span>
+                            <span class="plot-badge" id="waveform-badge">Đang dừng</span>
+                        </div>
+                        <div class="large-canvas-container">
+                            <canvas id="canvas-file-wave"></canvas>
+                        </div>
                     </div>
-                    <div class="canvas-container">
-                        <canvas id="canvas-1"></canvas>
-                    </div>
-                </div>
 
-                <!-- Plot 2: Microphone -->
-                <div class="plot-card" id="plot-card-2" style="--theme-color: var(--red);">
-                    <div class="plot-header">
-                        <span class="plot-title">🎙️ Bước 2: Sau Microphone (Lẫn nhiễu)</span>
-                        <span class="plot-badge">500 Hz + Nhiễu 12 kHz</span>
-                    </div>
-                    <div class="canvas-container">
-                        <canvas id="canvas-2"></canvas>
-                    </div>
-                </div>
-
-                <!-- Plot 3: ADC -->
-                <div class="plot-card" id="plot-card-3" style="--theme-color: var(--orange);">
-                    <div class="plot-header">
-                        <span class="plot-title">🔢 Bước 3: Sau bộ ADC (Số hóa x(n))</span>
-                        <span class="plot-badge">Lấy mẫu & Lượng tử 16-bit</span>
-                    </div>
-                    <div class="canvas-container">
-                        <canvas id="canvas-3"></canvas>
-                    </div>
-                </div>
-
-                <!-- Plot 4: MSDAP POT -->
-                <div class="plot-card" id="plot-card-4" style="--theme-color: var(--purple);">
-                    <div class="plot-header">
-                        <span class="plot-title">⚙️ Bước 4: Bộ xử lý MSDAP (Thuật toán POT)</span>
-                        <span class="plot-badge">Lọc sạch nhiễu dịch bit</span>
-                    </div>
-                    <div class="canvas-container">
-                        <canvas id="canvas-4"></canvas>
-                    </div>
-                </div>
-
-                <!-- Plot 5: DAC -->
-                <div class="plot-card" id="plot-card-5" style="--theme-color: var(--mint);">
-                    <div class="plot-header">
-                        <span class="plot-title">📉 Bước 5: Sau bộ DAC (Khôi phục)</span>
-                        <span class="plot-badge">Tái tạo điện áp liên tục</span>
-                    </div>
-                    <div class="canvas-container">
-                        <canvas id="canvas-5"></canvas>
-                    </div>
-                </div>
-
-                <!-- Plot 6: Receiver -->
-                <div class="plot-card" id="plot-card-6" style="--theme-color: var(--green);">
-                    <div class="plot-header">
-                        <span class="plot-title">🦻 Bước 6: Ngõ ra Loa (Khuếch đại)</span>
-                        <span class="plot-badge">Âm thanh sạch truyền vào tai</span>
-                    </div>
-                    <div class="canvas-container">
-                        <canvas id="canvas-6"></canvas>
+                    <!-- Real-time FFT Spectrum Canvas -->
+                    <div class="large-plot-card" style="--theme-color: var(--purple);">
+                        <div class="plot-header">
+                            <span class="plot-title">📈 Biểu đồ miền tần số (Phổ FFT) - Thời gian thực</span>
+                            <span class="plot-badge" id="spectrum-badge">Đang dừng</span>
+                        </div>
+                        <div class="large-canvas-container">
+                            <canvas id="canvas-file-freq"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -601,14 +847,38 @@
     <div class="status-toast" id="toast">Thông báo</div>
 
     <script>
-        // State variables
+        // Tab switching logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            
+            // Highlight active link
+            if (tabId === 'sim-tab') {
+                document.querySelector("button[onclick=\"switchTab('sim-tab')\"]").classList.add('active');
+                setTimeout(resizeCanvases, 100);
+            } else {
+                document.querySelector("button[onclick=\"switchTab('file-tab')\"]").classList.add('active');
+                setTimeout(resizeFileCanvases, 100);
+            }
+            
+            // Stop any playing audio to avoid overlays
+            stopAudio();
+            stopFileAudio();
+        }
+
+        // ------------------ TAB 1 SIMULATOR LOGIC ------------------
         let speechFreq = 500;
         let speechAmp = 0.8;
         let noiseFreq = 12000;
         let noiseAmp = 0.4;
         let activeStep = 1;
 
-        // Audio Context nodes
         let audioCtx = null;
         let speechOsc = null;
         let noiseOsc = null;
@@ -616,7 +886,6 @@
         let masterGain = null;
         let isPlaying = false;
 
-        // DOM elements
         const sliders = {
             speechFreq: document.getElementById('speech-freq'),
             speechAmp: document.getElementById('speech-amp'),
@@ -631,7 +900,6 @@
             noiseAmp: document.getElementById('noise-amp-val')
         };
 
-        // Canvas elements and context arrays
         const canvases = [];
         const ctxs = [];
         for (let i = 1; i <= 6; i++) {
@@ -640,7 +908,7 @@
             ctxs.push(canv.getContext('2d'));
         }
 
-        // Initialize Slider Listeners
+        // Listeners for Sliders (Tab 1)
         sliders.speechFreq.addEventListener('input', (e) => {
             speechFreq = parseInt(e.target.value);
             valDisplays.speechFreq.innerText = `${speechFreq} Hz`;
@@ -671,7 +939,6 @@
             updatePlots();
         });
 
-        // Initialize Step Interactive Listeners
         for (let i = 1; i <= 6; i++) {
             document.getElementById(`step-btn-${i}`).addEventListener('click', () => {
                 setActiveStep(i);
@@ -692,20 +959,18 @@
                     card.classList.remove('highlight');
                 }
             }
-            showToast(`Đang tập trung khảo sát Bước ${stepIndex}`);
+            showToast(`Khảo sát Bước ${stepIndex}`);
         }
 
-        // Show toast feedback
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 2000);
+            }, 2300);
         }
 
-        // Window resize handler for high DPI canvases
         function resizeCanvases() {
             canvases.forEach((canvas) => {
                 const rect = canvas.parentElement.getBoundingClientRect();
@@ -714,9 +979,7 @@
             });
             updatePlots();
         }
-        window.addEventListener('resize', resizeCanvases);
 
-        // Core Signal Drawing Math
         function updatePlots() {
             ctxs.forEach((ctx, idx) => {
                 const step = idx + 1;
@@ -724,40 +987,28 @@
                 const w = canvas.width;
                 const h = canvas.height;
 
-                // Clear canvas
                 ctx.clearRect(0, 0, w, h);
 
-                // Draw background grids
+                // Grids
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
                 ctx.lineWidth = 1;
                 const numGridX = 10;
                 const numGridY = 6;
                 for (let i = 1; i < numGridX; i++) {
                     const x = (w / numGridX) * i;
-                    ctx.beginPath();
-                    ctx.moveTo(x, 0);
-                    ctx.lineTo(x, h);
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
                 }
                 for (let i = 1; i < numGridY; i++) {
                     const y = (h / numGridY) * i;
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(w, y);
-                    ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
                 }
 
-                // Draw central axis
+                // Axis
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-                ctx.beginPath();
-                ctx.moveTo(0, h/2);
-                ctx.lineTo(w, h/2);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
 
-                // Plotting line settings
                 ctx.lineWidth = 2 * window.devicePixelRatio;
-                ctx.lineJoin = 'round';
-                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
                 const pad = 15 * window.devicePixelRatio;
                 const plotWidth = w - 2 * pad;
@@ -765,65 +1016,49 @@
                 const midY = h / 2;
 
                 ctx.beginPath();
-
-                // Time window to plot (6 milliseconds total window)
-                const totalTime = 0.005; 
+                const totalTime = 0.005;
 
                 if (step === 1) {
-                    // Continuous Acoustic Sound Wave (Cyan)
                     ctx.strokeStyle = '#00d2ff';
                     for (let x = 0; x <= plotWidth; x++) {
                         const t = (x / plotWidth) * totalTime;
                         const val = speechAmp * Math.sin(2 * Math.PI * speechFreq * t);
                         const canvasY = midY - val * (plotHeight / 2);
-                        if (x === 0) ctx.moveTo(pad, canvasY);
-                        else ctx.lineTo(pad + x, canvasY);
+                        if (x === 0) ctx.moveTo(pad, canvasY); else ctx.lineTo(pad + x, canvasY);
                     }
                     ctx.stroke();
                 } 
                 else if (step === 2) {
-                    // Microphone Output (Continuous with Noise - Red)
                     ctx.strokeStyle = '#ff6b6b';
                     for (let x = 0; x <= plotWidth; x++) {
                         const t = (x / plotWidth) * totalTime;
                         const val = speechAmp * Math.sin(2 * Math.PI * speechFreq * t) + 
                                     noiseAmp * Math.sin(2 * Math.PI * noiseFreq * t);
-                        const canvasY = midY - (val / 1.4) * (plotHeight / 2); // normalised scale
-                        if (x === 0) ctx.moveTo(pad, canvasY);
-                        else ctx.lineTo(pad + x, canvasY);
+                        const canvasY = midY - (val / 1.4) * (plotHeight / 2);
+                        if (x === 0) ctx.moveTo(pad, canvasY); else ctx.lineTo(pad + x, canvasY);
                     }
                     ctx.stroke();
                 }
                 else if (step === 3) {
-                    // ADC Output (Sampled & Quantized Noisy - Orange)
                     ctx.strokeStyle = '#ffa502';
-                    const sampleRate = 8000; // visual sample rate
+                    const sampleRate = 8000;
                     const Ts = 1 / sampleRate;
                     const quantLevels = 8;
-
-                    let lastY = midY;
                     for (let x = 0; x <= plotWidth; x++) {
                         const t = (x / plotWidth) * totalTime;
-                        // Find last sample time
                         const sampleIdx = Math.floor(t / Ts);
                         const tSample = sampleIdx * Ts;
-                        
-                        // Sample value
                         const rawVal = speechAmp * Math.sin(2 * Math.PI * speechFreq * tSample) + 
                                        noiseAmp * Math.sin(2 * Math.PI * noiseFreq * tSample);
-                        const normalizedVal = (rawVal / 1.4 + 1.2) / 2.4; // normalise to [0,1]
-                        
-                        // Quantized step mapping
+                        const normalizedVal = (rawVal / 1.4 + 1.2) / 2.4;
                         const quantVal = Math.round(normalizedVal * (quantLevels - 1)) / (quantLevels - 1);
                         const actualVal = (quantVal * 2.4 - 1.2) * 1.2;
-
                         const canvasY = midY - actualVal * (plotHeight / 2);
-                        if (x === 0) ctx.moveTo(pad, canvasY);
-                        else ctx.lineTo(pad + x, canvasY);
+                        if (x === 0) ctx.moveTo(pad, canvasY); else ctx.lineTo(pad + x, canvasY);
                     }
                     ctx.stroke();
 
-                    // Draw red dots at sample instants
+                    // Dots
                     ctx.fillStyle = '#ff4757';
                     const maxSamples = Math.floor(totalTime * sampleRate);
                     for (let n = 0; n <= maxSamples; n++) {
@@ -832,65 +1067,51 @@
                         const rawVal = speechAmp * Math.sin(2 * Math.PI * speechFreq * tSample) + 
                                        noiseAmp * Math.sin(2 * Math.PI * noiseFreq * tSample);
                         const canvasY = midY - (rawVal / 1.4) * (plotHeight / 2);
-                        ctx.beginPath();
-                        ctx.arc(xPos, canvasY, 3.5 * window.devicePixelRatio, 0, 2*Math.PI);
-                        ctx.fill();
+                        ctx.beginPath(); ctx.arc(xPos, canvasY, 3.5 * window.devicePixelRatio, 0, 2*Math.PI); ctx.fill();
                     }
                 }
                 else if (step === 4) {
-                    // MSDAP POT Filter Output (Sampled & Quantized Clean - Purple)
                     ctx.strokeStyle = '#9b5de5';
                     const sampleRate = 8000;
                     const Ts = 1 / sampleRate;
                     const quantLevels = 8;
-
                     for (let x = 0; x <= plotWidth; x++) {
                         const t = (x / plotWidth) * totalTime;
                         const sampleIdx = Math.floor(t / Ts);
                         const tSample = sampleIdx * Ts;
-                        
-                        // Sample value of clean speech only
                         const rawVal = speechAmp * Math.sin(2 * Math.PI * speechFreq * tSample);
                         const normalizedVal = (rawVal + 1) / 2;
-                        
                         const quantVal = Math.round(normalizedVal * (quantLevels - 1)) / (quantLevels - 1);
                         const actualVal = quantVal * 2 - 1;
-
                         const canvasY = midY - actualVal * (plotHeight / 2);
-                        if (x === 0) ctx.moveTo(pad, canvasY);
-                        else ctx.lineTo(pad + x, canvasY);
+                        if (x === 0) ctx.moveTo(pad, canvasY); else ctx.lineTo(pad + x, canvasY);
                     }
                     ctx.stroke();
                 }
                 else if (step === 5) {
-                    // DAC Output (Smooth Reconstructed Analog Voltage - Mint)
                     ctx.strokeStyle = '#00f5d4';
                     for (let x = 0; x <= plotWidth; x++) {
                         const t = (x / plotWidth) * totalTime;
                         const val = speechAmp * Math.sin(2 * Math.PI * speechFreq * t);
                         const canvasY = midY - val * (plotHeight / 2);
-                        if (x === 0) ctx.moveTo(pad, canvasY);
-                        else ctx.lineTo(pad + x, canvasY);
+                        if (x === 0) ctx.moveTo(pad, canvasY); else ctx.lineTo(pad + x, canvasY);
                     }
                     ctx.stroke();
                 }
                 else if (step === 6) {
-                    // Speaker / Receiver Output (Amplified Sound - Green)
                     ctx.strokeStyle = '#2ecc71';
-                    const gain = 1.35; // Amplification
+                    const gain = 1.35;
                     for (let x = 0; x <= plotWidth; x++) {
                         const t = (x / plotWidth) * totalTime;
                         const val = gain * speechAmp * Math.sin(2 * Math.PI * speechFreq * t);
-                        const canvasY = midY - (val / 1.4) * (plotHeight / 2); // scaled
-                        if (x === 0) ctx.moveTo(pad, canvasY);
-                        else ctx.lineTo(pad + x, canvasY);
+                        const canvasY = midY - (val / 1.4) * (plotHeight / 2);
+                        if (x === 0) ctx.moveTo(pad, canvasY); else ctx.lineTo(pad + x, canvasY);
                     }
                     ctx.stroke();
                 }
             });
         }
 
-        // Real-Time Audio Synthesizer (Web Audio API)
         function initAudio() {
             if (audioCtx) return;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -898,37 +1119,20 @@
 
         function stopAudio() {
             if (!isPlaying) return;
-            
-            if (speechOsc) {
-                speechOsc.stop();
-                speechOsc.disconnect();
-            }
-            if (noiseOsc) {
-                noiseOsc.stop();
-                noiseOsc.disconnect();
-            }
-            if (masterGain) {
-                masterGain.disconnect();
-            }
-            
-            speechOsc = null;
-            noiseOsc = null;
-            lowpassFilter = null;
-            masterGain = null;
+            if (speechOsc) { speechOsc.stop(); speechOsc.disconnect(); }
+            if (noiseOsc) { noiseOsc.stop(); noiseOsc.disconnect(); }
+            if (masterGain) { masterGain.disconnect(); }
+            speechOsc = null; noiseOsc = null; lowpassFilter = null; masterGain = null;
             isPlaying = false;
-            showToast("Đã tắt âm thanh");
+            showToast("Đã tắt âm thanh mô phỏng");
         }
 
-        document.getElementById('stop-audio').addEventListener('click', stopAudio);
-
-        // Play Noisy Signal (Step 2 - Raw Sound)
         document.getElementById('play-noisy').addEventListener('click', () => {
             stopAudio();
+            stopFileAudio();
             initAudio();
 
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
 
             speechOsc = audioCtx.createOscillator();
             speechOsc.type = 'sine';
@@ -957,17 +1161,15 @@
             noiseOsc.start();
             isPlaying = true;
             setActiveStep(2);
-            showToast("Đang phát Âm thô (Có cọc rít nhiễu dải cao)");
+            showToast("Đang phát Âm thô (Có cọc rít nhiễu 12 kHz)");
         });
 
-        // Play Clean Signal (Step 6 - Filtered Sound through MSDAP + POT)
         document.getElementById('play-clean').addEventListener('click', () => {
             stopAudio();
+            stopFileAudio();
             initAudio();
 
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
 
             speechOsc = audioCtx.createOscillator();
             speechOsc.type = 'sine';
@@ -1004,9 +1206,337 @@
             showToast("Máy trợ thính đang phát (MSDAP đã cắt rít nhiễu)");
         });
 
-        setTimeout(() => {
+        document.getElementById('stop-audio').addEventListener('click', stopAudio);
+
+
+        // ------------------ TAB 2: AUDIO FILE DSP LOGIC ------------------
+        let uploadedBuffer = null;
+        let fileSource = null;
+        let fileAnalyser = null;
+        let fileFilter = null;
+        let fileGain = null;
+        let isFilePlaying = false;
+        let fileCutoff = 2200;
+        let fileVolume = 1.0;
+        let animationFrameId = null;
+
+        const fileCanvasWave = document.getElementById('canvas-file-wave');
+        const fileCanvasFreq = document.getElementById('canvas-file-freq');
+        const ctxWave = fileCanvasWave.getContext('2d');
+        const ctxFreq = fileCanvasFreq.getContext('2d');
+
+        const fileCutoffSlider = document.getElementById('file-cutoff');
+        const fileVolumeSlider = document.getElementById('file-volume');
+        const fileCutoffVal = document.getElementById('file-cutoff-val');
+        const fileVolumeVal = document.getElementById('file-volume-val');
+
+        // File Sliders Listeners
+        fileCutoffSlider.addEventListener('input', (e) => {
+            fileCutoff = parseInt(e.target.value);
+            fileCutoffVal.innerText = `${fileCutoff} Hz`;
+            if (isFilePlaying && fileFilter) {
+                fileFilter.frequency.setValueAtTime(fileCutoff, audioCtx.currentTime);
+            }
+        });
+
+        fileVolumeSlider.addEventListener('input', (e) => {
+            fileVolume = parseInt(e.target.value) / 100;
+            fileVolumeVal.innerText = `${Math.round(fileVolume*100)}%`;
+            if (isFilePlaying && fileGain) {
+                fileGain.gain.setValueAtTime(fileVolume, audioCtx.currentTime);
+            }
+        });
+
+        // Drop zone drag and drop handlers
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length) handleFile(files[0]);
+        });
+
+        // Load Demo Button Listener
+        document.getElementById('load-demo-btn').addEventListener('click', () => {
+            showToast("Đang nạp ghi âm mẫu từ thư mục...");
+            stopAudio();
+            stopFileAudio();
+            initAudio();
+
+            // Try composed and decomposed Unicode names just in case
+            const filename1 = "Ba\u0309n ghi mo\u031b\u0301i 6.m4a"; // NFD
+            const filename2 = "B\u1ea3n ghi m\u1edbi 6.m4a"; // NFC
+
+            fetch(filename1)
+                .then(res => {
+                    if (!res.ok) {
+                        return fetch(filename2);
+                    }
+                    return res;
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("Không thể tải file trực tiếp qua fetch. Có thể do chặn CORS.");
+                    return res.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                    showToast("Đang giải mã âm thanh mẫu...");
+                    audioCtx.decodeAudioData(arrayBuffer, function(decodedBuffer) {
+                        uploadedBuffer = decodedBuffer;
+                        showToast("Nạp ghi âm mẫu thành công! Đã sẵn sàng xử lý.");
+                        document.getElementById('file-info').innerHTML = `
+                            <h4>Thông tin tệp tin</h4>
+                            <strong>Tên tệp:</strong> Bản ghi mới 6.m4a (Bản ghi mẫu)<br>
+                            <strong>Thời lượng:</strong> ${decodedBuffer.duration.toFixed(2)} giây<br>
+                            <strong>Tần số lấy mẫu:</strong> ${decodedBuffer.sampleRate} Hz<br>
+                            <strong>Số kênh âm thanh:</strong> ${decodedBuffer.numberOfChannels} (Stereo)
+                        `;
+                        drawStaticWaveform(decodedBuffer);
+                    }, function(err) {
+                        showToast(`Lỗi giải mã âm thanh: ${err.message}`);
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast("Lỗi CORS! Hãy kéo-thả trực tiếp tệp 'Bản ghi mới 6.m4a' từ máy của bạn vào đây.");
+                });
+        });
+
+        // Main File Loader & Decoder
+        function handleFile(file) {
+            showToast(`Đang nạp tệp ghi âm: ${file.name}...`);
+            stopAudio();
+            stopFileAudio();
+            initAudio();
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const arrayBuffer = evt.target.result;
+                showToast("Đang giải mã âm thanh (Decoding)...");
+                
+                audioCtx.decodeAudioData(arrayBuffer, function(decodedBuffer) {
+                    uploadedBuffer = decodedBuffer;
+                    showToast("Giải mã thành công! Đã sẵn sàng xử lý.");
+                    document.getElementById('file-info').innerHTML = `
+                        <h4>Thông tin tệp tin</h4>
+                        <strong>Tên tệp:</strong> ${file.name}<br>
+                        <strong>Thời lượng:</strong> ${decodedBuffer.duration.toFixed(2)} giây<br>
+                        <strong>Tần số lấy mẫu:</strong> ${decodedBuffer.sampleRate} Hz<br>
+                        <strong>Số kênh âm thanh:</strong> ${decodedBuffer.numberOfChannels} (Stereo)
+                    `;
+                    // Plot static preview
+                    drawStaticWaveform(decodedBuffer);
+                }, function(err) {
+                    showToast(`Lỗi giải mã âm thanh: ${err.message}`);
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Draw static preview waveform inside canvas when file is loaded
+        function drawStaticWaveform(buffer) {
+            const w = fileCanvasWave.width;
+            const h = fileCanvasWave.height;
+            ctxWave.clearRect(0, 0, w, h);
+            
+            // Draw axes
+            ctxWave.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctxWave.lineWidth = 1;
+            ctxWave.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+            const data = buffer.getChannelData(0);
+            const step = Math.ceil(data.length / w);
+            const amp = h / 2;
+
+            ctxWave.strokeStyle = 'rgba(0, 210, 255, 0.5)';
+            ctxWave.lineWidth = 1.5;
+            ctxWave.beginPath();
+            
+            for (let i = 0; i < w; i++) {
+                let min = 1.0;
+                let max = -1.0;
+                for (let j = 0; j < step; j++) {
+                    const datum = data[(i * step) + j];
+                    if (datum < min) min = datum;
+                    if (datum > max) max = datum;
+                }
+                ctxWave.moveTo(i, (min + 1) * amp);
+                ctxWave.lineTo(i, (max + 1) * amp);
+            }
+            ctxWave.stroke();
+            document.getElementById('waveform-badge').innerText = "Đã nạp file đầu vào";
+        }
+
+        function playFileAudio(isFiltered) {
+            if (!uploadedBuffer) {
+                showToast("Vui lòng nạp tệp âm thanh ghi âm trước!");
+                return;
+            }
+            stopAudio();
+            stopFileAudio();
+            initAudio();
+
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            fileSource = audioCtx.createBufferSource();
+            fileSource.buffer = uploadedBuffer;
+            fileSource.loop = true;
+
+            fileAnalyser = audioCtx.createAnalyser();
+            fileAnalyser.fftSize = 256;
+
+            fileGain = audioCtx.createGain();
+            fileGain.gain.setValueAtTime(fileVolume, audioCtx.currentTime);
+
+            if (isFiltered) {
+                // Lowpass filter representing MSDAP POT
+                fileFilter = audioCtx.createBiquadFilter();
+                fileFilter.type = 'lowpass';
+                fileFilter.frequency.setValueAtTime(fileCutoff, audioCtx.currentTime);
+                fileFilter.Q.setValueAtTime(1.0, audioCtx.currentTime);
+
+                fileSource.connect(fileFilter);
+                fileFilter.connect(fileAnalyser);
+                fileAnalyser.connect(fileGain);
+                fileGain.connect(audioCtx.destination);
+                
+                document.getElementById('waveform-badge').innerText = `Đang lọc (Cutoff: ${fileCutoff}Hz)`;
+                document.getElementById('spectrum-badge').innerText = "Đã lọc dải cao";
+                showToast("Đang phát tệp ghi âm qua bộ lọc máy trợ thính!");
+            } else {
+                fileSource.connect(fileAnalyser);
+                fileAnalyser.connect(fileGain);
+                fileGain.connect(audioCtx.destination);
+                
+                document.getElementById('waveform-badge').innerText = "Gốc (Không lọc)";
+                document.getElementById('spectrum-badge').innerText = "Toàn phổ âm";
+                showToast("Đang phát tệp ghi âm gốc!");
+            }
+
+            fileSource.start(0);
+            isFilePlaying = true;
+            drawRealTimeFilePlots();
+        }
+
+        function stopFileAudio() {
+            if (!isFilePlaying) return;
+            if (fileSource) { fileSource.stop(); fileSource.disconnect(); }
+            if (fileGain) { fileGain.disconnect(); }
+            fileSource = null; fileFilter = null; fileGain = null; fileAnalyser = null;
+            isFilePlaying = false;
+            cancelAnimationFrame(animationFrameId);
+            document.getElementById('waveform-badge').innerText = "Đang dừng";
+            document.getElementById('spectrum-badge').innerText = "Đang dừng";
+            
+            // Clear real-time frames and redraw static buffer
+            if (uploadedBuffer) drawStaticWaveform(uploadedBuffer);
+            showToast("Đã dừng phát âm thanh");
+        }
+
+        document.getElementById('play-file-raw').addEventListener('click', () => playFileAudio(false));
+        document.getElementById('play-file-filtered').addEventListener('click', () => playFileAudio(true));
+        document.getElementById('stop-file-audio').addEventListener('click', stopFileAudio);
+
+        // Real-Time Canvas Visualization Loop for File Tab
+        function drawRealTimeFilePlots() {
+            if (!isFilePlaying || !fileAnalyser) return;
+
+            animationFrameId = requestAnimationFrame(drawRealTimeFilePlots);
+
+            const bufferLength = fileAnalyser.frequencyBinCount;
+            
+            // Draw Waveform (Time Domain)
+            const timeData = new Uint8Array(bufferLength);
+            fileAnalyser.getByteTimeDomainData(timeData);
+
+            const w1 = fileCanvasWave.width;
+            const h1 = fileCanvasWave.height;
+            ctxWave.clearRect(0, 0, w1, h1);
+
+            // Grid lines
+            ctxWave.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctxWave.lineWidth = 1;
+            for (let i = 1; i < 8; i++) {
+                const x = (w1 / 8) * i;
+                ctxWave.beginPath(); ctxWave.moveTo(x, 0); ctxWave.lineTo(x, h1); ctxWave.stroke();
+            }
+
+            ctxWave.strokeStyle = '#00d2ff';
+            ctxWave.lineWidth = 2 * window.devicePixelRatio;
+            ctxWave.beginPath();
+
+            const sliceWidth = w1 / bufferLength;
+            let x = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const v = timeData[i] / 128.0;
+                const y = v * h1 / 2;
+                if (i === 0) ctxWave.moveTo(x, y); else ctxWave.lineTo(x, y);
+                x += sliceWidth;
+            }
+            ctxWave.stroke();
+
+            // Draw Spectrum (Frequency Domain FFT)
+            const freqData = new Uint8Array(bufferLength);
+            fileAnalyser.getByteFrequencyData(freqData);
+
+            const w2 = fileCanvasFreq.width;
+            const h2 = fileCanvasFreq.height;
+            ctxFreq.clearRect(0, 0, w2, h2);
+
+            // Grid lines
+            ctxFreq.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctxFreq.lineWidth = 1;
+            for (let i = 1; i < 8; i++) {
+                const x = (w2 / 8) * i;
+                ctxFreq.beginPath(); ctxFreq.moveTo(x, 0); ctxFreq.lineTo(x, h2); ctxFreq.stroke();
+            }
+
+            const barWidth = (w2 / bufferLength) * 1.5;
+            let x2 = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const percent = freqData[i] / 255;
+                const barHeight = percent * h2;
+                
+                // Color gradient (Magenta to purple to cyan depending on frequency)
+                const hue = 280 - (i / bufferLength) * 120;
+                ctxFreq.fillStyle = `hsla(${hue}, 85%, 55%, ${0.2 + percent*0.8})`;
+                ctxFreq.fillRect(x2, h2 - barHeight, barWidth - 1, barHeight);
+                x2 += barWidth;
+            }
+        }
+
+        function resizeFileCanvases() {
+            const rectWave = fileCanvasWave.parentElement.getBoundingClientRect();
+            fileCanvasWave.width = rectWave.width * window.devicePixelRatio;
+            fileCanvasWave.height = rectWave.height * window.devicePixelRatio;
+
+            const rectFreq = fileCanvasFreq.parentElement.getBoundingClientRect();
+            fileCanvasFreq.width = rectFreq.width * window.devicePixelRatio;
+            fileCanvasFreq.height = rectFreq.height * window.devicePixelRatio;
+
+            if (uploadedBuffer && !isFilePlaying) drawStaticWaveform(uploadedBuffer);
+        }
+
+        // Automatic layout loading
+        window.addEventListener('load', () => {
             resizeCanvases();
-        }, 100);
+            resizeFileCanvases();
+        });
     </script>
 </body>
 </html>
