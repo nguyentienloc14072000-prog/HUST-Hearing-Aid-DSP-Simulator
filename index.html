@@ -622,6 +622,23 @@
                     </div>
                 </div>
 
+                <div>
+                    <div class="panel-title">Tình trạng tai bệnh nhân</div>
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Mức bù thính lực</span>
+                                <span class="value" id="hearing-loss-val">Nhẹ (Bù +20dB)</span>
+                            </div>
+                            <select id="hearing-loss-select" style="background: rgba(31, 41, 55, 0.6); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; font-weight: bold; outline: none; cursor: pointer; transition: all 0.3s;">
+                                <option value="mild" selected>Khiếm thính Nhẹ (Bù nhẹ 1.35x)</option>
+                                <option value="moderate">Khiếm thính Vừa (Bù vừa 1.85x)</option>
+                                <option value="severe">Khiếm thính Nặng (Bù mạnh 2.50x)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
                     <div class="panel-title">Trải nghiệm âm thanh DSP</div>
                     <div class="audio-buttons">
@@ -798,6 +815,19 @@
                     </div>
                 </div>
 
+                <div>
+                    <div class="panel-title">Tình trạng tai bệnh nhân</div>
+                    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 15px;">
+                        <div class="control-group">
+                            <select id="file-hearing-loss-select" style="background: rgba(31, 41, 55, 0.6); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; font-weight: bold; outline: none; cursor: pointer; transition: all 0.3s; width: 100%;">
+                                <option value="mild" selected>Khiếm thính Nhẹ (Bù nhẹ +20dB / 1.0x)</option>
+                                <option value="moderate">Khiếm thính Vừa (Bù vừa +40dB / 1.5x)</option>
+                                <option value="severe">Khiếm thính Nặng (Bù mạnh +70dB / 2.2x)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Control Buttons -->
                 <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px;">
                     <div class="panel-title">Trình điều khiển</div>
@@ -938,6 +968,36 @@
             valDisplays.noiseAmp.innerText = `${Math.round(noiseAmp*100)}%`;
             updatePlots();
         });
+
+        // Hearing Loss Select Listener
+        const hearingLossSelect = document.getElementById('hearing-loss-select');
+        const hearingLossVal = document.getElementById('hearing-loss-val');
+        
+        hearingLossSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val === 'mild') {
+                hearingLossVal.innerText = "Nhẹ (Bù +20dB)";
+            } else if (val === 'moderate') {
+                hearingLossVal.innerText = "Vừa (Bù +40dB)";
+            } else if (val === 'severe') {
+                hearingLossVal.innerText = "Nặng (Bù +70dB)";
+            }
+            updatePlots();
+            
+            // If playing, dynamically adjust the master gain of active sound!
+            if (isPlaying && masterGain && audioCtx) {
+                const hlGain = getHearingLossGain();
+                masterGain.gain.setValueAtTime(hlGain * 0.15, audioCtx.currentTime);
+            }
+        });
+
+        function getHearingLossGain() {
+            const selectVal = document.getElementById('hearing-loss-select').value;
+            if (selectVal === 'mild') return 1.35;
+            if (selectVal === 'moderate') return 1.85;
+            if (selectVal === 'severe') return 2.50;
+            return 1.35;
+        }
 
         for (let i = 1; i <= 6; i++) {
             document.getElementById(`step-btn-${i}`).addEventListener('click', () => {
@@ -1100,11 +1160,11 @@
                 }
                 else if (step === 6) {
                     ctx.strokeStyle = '#2ecc71';
-                    const gain = 1.35;
+                    const gain = getHearingLossGain();
                     for (let x = 0; x <= plotWidth; x++) {
                         const t = (x / plotWidth) * totalTime;
                         const val = gain * speechAmp * Math.sin(2 * Math.PI * speechFreq * t);
-                        const canvasY = midY - (val / 1.4) * (plotHeight / 2);
+                        const canvasY = midY - (val / 2.6) * (plotHeight / 2);
                         if (x === 0) ctx.moveTo(pad, canvasY); else ctx.lineTo(pad + x, canvasY);
                     }
                     ctx.stroke();
@@ -1191,7 +1251,8 @@
             noiseGain.gain.setValueAtTime(noiseAmp * 0.15, audioCtx.currentTime);
 
             masterGain = audioCtx.createGain();
-            masterGain.gain.setValueAtTime(1.35, audioCtx.currentTime);
+            const hlGain = getHearingLossGain();
+            masterGain.gain.setValueAtTime(hlGain * 0.12, audioCtx.currentTime); // scaled slightly to prevent speaker distortion at 2.5x gain!
 
             speechOsc.connect(lowpassFilter);
             noiseOsc.connect(lowpassFilter);
@@ -1243,9 +1304,27 @@
             fileVolume = parseInt(e.target.value) / 100;
             fileVolumeVal.innerText = `${Math.round(fileVolume*100)}%`;
             if (isFilePlaying && fileGain) {
-                fileGain.gain.setValueAtTime(fileVolume, audioCtx.currentTime);
+                const hlGain = getFileHearingLossGain();
+                fileGain.gain.setValueAtTime(fileVolume * hlGain, audioCtx.currentTime);
             }
         });
+
+        // File Hearing Loss Select Listener
+        const fileHearingLossSelect = document.getElementById('file-hearing-loss-select');
+        fileHearingLossSelect.addEventListener('change', () => {
+            if (isFilePlaying && fileGain && audioCtx) {
+                const hlGain = getFileHearingLossGain();
+                fileGain.gain.setValueAtTime(fileVolume * hlGain, audioCtx.currentTime);
+            }
+        });
+
+        function getFileHearingLossGain() {
+            const selectVal = document.getElementById('file-hearing-loss-select').value;
+            if (selectVal === 'mild') return 1.0;
+            if (selectVal === 'moderate') return 1.6;
+            if (selectVal === 'severe') return 2.4;
+            return 1.0;
+        }
 
         // Drop zone drag and drop handlers
         const dropZone = document.getElementById('drop-zone');
@@ -1401,7 +1480,8 @@
             fileAnalyser.fftSize = 256;
 
             fileGain = audioCtx.createGain();
-            fileGain.gain.setValueAtTime(fileVolume, audioCtx.currentTime);
+            const hlGain = isFiltered ? getFileHearingLossGain() : 1.0;
+            fileGain.gain.setValueAtTime(fileVolume * hlGain, audioCtx.currentTime);
 
             if (isFiltered) {
                 // Lowpass filter representing MSDAP POT
